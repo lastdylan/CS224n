@@ -1,0 +1,166 @@
+%=======================02-713 LaTeX template, following the 15-210 template==================
+%
+% You don't need to use LaTeX or this template, but you must turn your homework in as
+% a typeset PDF somehow.
+%
+% How to use:
+%    1. Update your information in section "A" below
+%    2. Write your answers in section "B" below. Precede answers for all 
+%       parts of a question with the command "\question{n}{desc}" where n is
+%       the question number and "desc" is a short, one-line description of 
+%       the problem. There is no need to restate the problem.
+%    3. If a question has multiple parts, precede the answer to part x with the
+%       command "\part{x}".
+%    4. If a problem asks you to design an algorithm, use the commands
+%       \algorithm, \correctness, \runtime to precede your discussion of the 
+%       description of the algorithm, its correctness, and its running time, respectively.
+%    5. You can include graphics by using the command \includegraphics{FILENAME}
+%
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage[margin=1in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{bm}
+\usepackage{breqn}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt plus 1pt}
+\setlength{\headheight}{13.6pt}
+\newcommand\question[2]{\vspace{.25in}\hrule\textbf{#1: #2}\vspace{.5em}\hrule\vspace{.10in}}
+\renewcommand\part[1]{\vspace{.10in}\textbf{(#1)}}
+\newcommand\problem{\vspace{.10in}\textbf{Problem: }}
+\newcommand\answer{\vspace{.10in}\textbf{Answer: }}
+\newcommand{\softmax}[1]{\text{softmax}{(#1})}
+\pagestyle{fancyplain}
+\lhead{\textbf{\NAME}}
+\chead{\textbf{HW\HWNUM}}
+\rhead{02-713, \today}
+\begin{document}\raggedright
+%Section A==============Change the values below to match your information==================
+\newcommand\NAME{Last Feremenga}  % your name
+\newcommand\HWNUM{1}              % the homework number
+%Section B==============Put your answers to the questions below here=======================
+
+% no need to restate the problem --- the graders know which problem is which,
+% but replacing "The First Problem" with a short phrase will help you remember
+% which problem this is when you read over your homeworks to study.
+
+\question{3}{word2vec}
+
+\part{a} \problem Given a predicted word vector $v_c$ for center word $c$ for skip-gram and softmax
+prediction, find the derivative of the cross entropy cost wrt $v_c$
+
+\answer The soft-max prediction gives:
+
+\begin{equation}
+  \hat{y}_o = p(o|c) = \frac{\exp{(\bm{u}_o^T\bm{v}_c)}}{\sum_{w=1}^V\exp{(\bm{u}_w^T\bm{v}_c)}}
+\end{equation}
+
+Cross entropy loss is given by 
+
+\begin{equation}
+  \text{CE}(\bm{y}, \bm{\hat{y}}) = J = -\sum_{i=1}^Vy_i\log{\hat{y}_i}
+\end{equation}
+
+where $\bm{\hat{y}}$ is a $1\times V$ matrix/vector whose components are the softmax results, and 
+$\bm{y}$ is a $1\times V$ matrix/vector that is 1-hot encoded with 1 at the $o$th entry. So, 
+we can write $\bm{\hat{y}}$ as 
+
+\begin{equation}
+  \bm{\hat{y}} = \softmax{\bm{z}}
+\end{equation}
+
+where $\bm{z}$ comprises $z_i = \bm{u}_i^T\bm{v}_c$.
+
+We want to calculate, by chain rule
+
+\begin{equation}
+  \frac{\partial J}{\partial \bm{v}_c} =  \frac{\partial J}{\partial \bm{z}}\frac{\partial\bm{z}}{\partial \bm{v}_c}
+\end{equation}
+
+where we are multiplying a $1\times V$ matrix with a $V\times V$ matrix.
+
+From previous results we have 
+
+\begin{equation}
+  \frac{\partial J}{\partial \bm{z}} = \bm{\hat{y}} - \bm{y}
+\end{equation}
+
+If we consider $\bm{z}$ a column vector, and adopt numerator layout for derivatives we get 
+
+\begin{equation}
+  \frac{\partial\bm{z}}{\partial \bm{v}_c} = \begin{bmatrix} \bm{u}_1 & ... &  \bm{u}_V\end{bmatrix} = \bm{U} 
+\end{equation}
+
+This gives 
+
+\begin{equation}
+  \frac{\partial J}{\partial \bm{v}_c} = (\bm{\hat{y}} - \bm{y})\bm{U}
+\end{equation}
+
+\part{b} \problem Find the partial derivative of the above cost function wrt $\bm{u}_k$
+
+\answer We need to calculate
+
+\begin{equation}
+  \frac{\partial J}{\partial \bm{u}_k} =  \frac{\partial J}{\partial \bm{z}}\frac{\partial\bm{z}}{\partial \bm{u}_k}
+\end{equation}
+
+We use results from the preceding sub-problem for $\frac{\partial J}{\partial \bm{z}}$ and note that 
+\begin{equation}
+  \frac{\partial\bm{z}_i}{\partial \bm{u}_k}  = \bm{v}_c\delta_{ik}
+\end{equation}
+
+Because of the Kronecker delta we can write 
+
+\begin{equation}
+  \frac{\partial J}{\partial \bm{u}_k} =  \frac{\partial J}{\partial \bm{z}_i}\frac{\partial\bm{z}_i}{\partial \bm{u}_k}
+\end{equation}
+
+This gives 
+\begin{equation}
+  \frac{\partial J}{\partial \bm{u}_k} = (\bm{\hat{y}} - \bm{y})_k\bm{v}_c
+\end{equation}
+
+%or 
+%
+%\begin{equation}
+%  \frac{\partial J}{\partial \bm{U}} = \begin{bmatrix} (\bm{\hat{y}} - \bm{y})_1\bm{v}_c & ... & (\bm{\hat{y}} - \bm{y})_V\bm{v}_c \end{bmatrix}
+%    = (\bm{\hat{y}} - \bm{y})\bm{v}_c
+%\end{equation}
+
+\part{c} \problem Repeating \part{a} for a negative sampling cost function
+
+\answer Given the cost function 
+\begin{equation}
+  J = -\log(\sigma(\bm{u}_o^T\bm{v}_c)) - \sum_{k=1}^K\log(\sigma(-\bm{u}_k^T\bm{v}_c))
+\end{equation}
+
+we use the chain rule 
+\begin{dmath}
+  \frac{\partial J}{\partial \bm{v}_c} = -\frac{\bm{u}_o^T\sigma(\bm{u}_o^T\bm{v}_c)(1 - \sigma(\bm{u}_o^T\bm{v}_c))}{\sigma(\bm{u}_o^T\bm{v}_c)}
+   - \sum_{k=1}^K \frac{\bm{u}_k^T\sigma(\bm{u}_k^T\bm{v}_c)(1 - \sigma(\bm{u}_k^T\bm{v}_c))}{\sigma(\bm{u}_k^T\bm{v}_c)}
+ =  -\bm{u}_o^T(1 - \sigma(\bm{u}_o^T\bm{v}_c))  - \sum_{k=1}^K \bm{u}_k^T(1 - \sigma(\bm{u}_k^T\bm{v}_c))
+\end{dmath}
+
+
+Similarly 
+
+\begin{dmath}
+  \frac{\partial J}{\partial \bm{u}_o} = (\sigma(\bm{u}_o^T\bm{v}_c) - 1) \bm{v}_c^T
+\end{dmath}
+
+and 
+
+\begin{dmath}
+  \frac{\partial J}{\partial \bm{u}_k} = (1 - \sigma(-\bm{u}_k^T\bm{v}_c)) \bm{v}_c^T
+\end{dmath}
+
+for $o \neq k$
+
+This cost function and its derivatives are much easier to compute because the computation is over $K$ words as opposed to the 
+entire vocabulary
+
+\part{c} \problem Perform same derivatives for the skip-gram and the CBOW models
+\answer By abstracting the cost function per word by $F_j$ this answer is trivial for both cases
+\end{document}
