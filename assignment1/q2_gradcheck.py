@@ -3,14 +3,14 @@ import random
 
 # First implement a gradient checker by filling in the following functions
 def gradcheck_naive(f, x):
-    """ 
-    Gradient check for a function f 
+    """
+    Gradient check for a function f
     - f should be a function that takes a single argument and outputs the cost and its gradients
     - x is the point (numpy array) to check the gradient at
-    """ 
+    """
 
     rndstate = random.getstate()
-    random.setstate(rndstate)  
+    random.setstate(rndstate)
     fx, grad = f(x) # Evaluate function value at original point
     h = 1e-4
 
@@ -20,10 +20,23 @@ def gradcheck_naive(f, x):
         ix = it.multi_index
 
         ### try modifying x[ix] with h defined above to compute numerical gradients
-        ### make sure you call random.setstate(rndstate) before calling f(x) each time, this will make it 
+        ### make sure you call random.setstate(rndstate) before calling f(x) each time, this will make it
         ### possible to test cost functions with built in randomness later
         ### YOUR CODE HERE:
-        raise NotImplementedError
+
+        # increment by h
+        x_temp = x.astype('float64')
+        x_temp[ix] += h
+        random.setstate(rndstate)
+        plusFx, _ = f(x_temp)
+
+        # decrease by h
+        x_temp[ix] -= 2*h
+        random.setstate(rndstate)
+        minusFx, _ = f(x_temp)
+
+        numgrad = (plusFx - minusFx)/(2*h)
+
         ### END YOUR CODE
 
         # Compare gradients
@@ -33,7 +46,7 @@ def gradcheck_naive(f, x):
             print "First gradient error found at index %s" % str(ix)
             print "Your gradient: %f \t Numerical gradient: %f" % (grad[ix], numgrad)
             return
-    
+
         it.iternext() # Step to next dimension
 
     print "Gradient check passed!"
@@ -50,16 +63,15 @@ def sanity_check():
     gradcheck_naive(quad, np.random.randn(4,5))   # 2-D test
     print ""
 
-def your_sanity_checks(): 
+def your_sanity_checks():
     """
     Use this space add any additional sanity checks by running:
-        python q2_gradcheck.py 
+        python q2_gradcheck.py
     This function will not be called by the autograder, nor will
     your additional tests be graded.
     """
     print "Running your sanity checks..."
     ### YOUR CODE HERE
-    raise NotImplementedError
     ### END YOUR CODE
 
 if __name__ == "__main__":
